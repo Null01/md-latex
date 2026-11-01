@@ -1,0 +1,33 @@
+# Documentos privados del usuario: sources/ nunca se sube (el ejemplo público es examples/)
+sources/
+*.local.md
+
+# Salidas generadas
+documento.tex
+documento.pdf
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+**/img/mermaid_*.pdf
+
+# macOS
+.DS_Store
+
+# IDEs y herramientas locales
+.idea/
+.qodo/
+.vscode/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Secretos (por si se agregan en el futuro)
+.env
+.env.*
+*.pem
+*.key
