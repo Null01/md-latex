@@ -508,7 +508,8 @@ def parse_markdown_to_latex(md_content, source_dir="sources"):
                 if code_block_lang == "mermaid":
                     mermaid_counter += 1
                     mermaid_code = "\n".join(code_lines)
-                    img_dir = os.path.join(source_dir, "img")
+                    # Ruta absoluta: LaTeX se compila en la carpeta del .tex, que puede no ser el cwd
+                    img_dir = os.path.join(os.path.abspath(source_dir), "img")
                     # Caché: el nombre depende del código y de la versión del render, así que
                     # un diagrama sin cambios se reutiliza sin abrir Chrome.
                     digest = hashlib.sha1((MERMAID_RENDER_VERSION + mermaid_code).encode("utf-8")).hexdigest()[:12]
@@ -757,7 +758,7 @@ def build_latex_document(metadata, body_latex, source_dir="sources"):
     header_left = escape_latex(asignatura.split('—')[0].strip()) if asignatura else ""
 
     # Normalizar ruta de carpeta de fuentes para graphicspath
-    clean_src = source_dir.rstrip("/\\") if source_dir else "sources"
+    clean_src = os.path.abspath(source_dir or "sources").rstrip("/\\")
     if re.search(r'[{}\\%#$^~&]', clean_src):
         print("[!] La carpeta de fuentes tiene caracteres no válidos para LaTeX; se usa 'sources' en \\graphicspath.")
         clean_src = "sources"
@@ -782,7 +783,7 @@ def build_latex_document(metadata, body_latex, source_dir="sources"):
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
 % Rutas de búsqueda automática para imágenes (incluyendo carpeta sources y sus subcarpetas)
-\graphicspath{{./}{./""" + clean_src + r"""/}{./""" + clean_src + r"""/img/}{./""" + clean_src + r"""/imagenes/}{./""" + clean_src + r"""/images/}{./""" + clean_src + r"""/assets/}{./img/}{./imagenes/}{./images/}{./assets/}}
+\graphicspath{{./}{""" + clean_src + r"""/}{""" + clean_src + r"""/img/}{""" + clean_src + r"""/imagenes/}{""" + clean_src + r"""/images/}{""" + clean_src + r"""/assets/}{./img/}{./imagenes/}{./images/}{./assets/}}
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{ragged2e}  % \RaggedRight: alineado a la izquierda pero con guionado de palabras
@@ -1134,6 +1135,7 @@ def main():
         base_path = "documento" if base_name in ("body", "sources") else base_name
 
     tex_path = base_path + ".tex"
+    os.makedirs(os.path.dirname(os.path.abspath(tex_path)), exist_ok=True)
 
     with open(tex_path, "w", encoding="utf-8") as f:
         f.write(full_latex)

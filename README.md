@@ -24,6 +24,8 @@ md-to-latex/
 ├── md_to_latex.py           # Script de conversión y compilación
 ├── test_md_to_latex.py      # Pruebas unitarias
 ├── README.md
+├── skills/
+│   └── md-to-latex/SKILL.md # Skill para que un agente use la herramienta
 ├── templates/
 │   └── mermaid.min.js       # Mermaid local (lo usa Chrome para renderizar diagramas)
 ├── examples/                # Ejemplo completo y público (es lo que se sube a Git)
@@ -35,6 +37,14 @@ md-to-latex/
 
 > **Privacidad:** `sources/` está en el `.gitignore`. Pon ahí tus propios `header.md`, `body.md` e imágenes.
 > Para probar la herramienta sin crear nada, usa `python3 md_to_latex.py examples/`.
+
+---
+
+## Skill para agentes
+
+[skills/md-to-latex/SKILL.md](skills/md-to-latex/SKILL.md) describe esta herramienta en formato de *skill* (Markdown con frontmatter `name` / `description`), para que un agente la use al recibir una ruta a un `.md` o a una carpeta con `header.md` y `body.md`. El skill indica cómo validar los metadatos, convertir, qué hacer ante cada código de salida y qué reglas de seguridad respetar.
+
+Para activarlo en tu agente, copia o enlaza la carpeta `skills/md-to-latex/` donde ese agente busque skills y define `MD_LATEX_HOME` con la ruta de este repositorio. Esa instalación la haces tú: el skill no modifica la configuración de ningún agente.
 
 ---
 

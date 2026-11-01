@@ -491,5 +491,33 @@ class InputValidationTests(unittest.TestCase):
         self.assertEqual(os.listdir(self.tmp), [])
 
 
+class PathAndSkillTests(unittest.TestCase):
+    def test_carpeta_de_salida_inexistente_se_crea_y_ruta_absoluta_funciona(self):
+        with tempfile.TemporaryDirectory() as d:
+            src = os.path.join(d, "fuentes")
+            os.makedirs(src)
+            for name, text in (("body.md", "# Hola\n\nTexto."), ("header.md", "titulo: T\nautor: A\nasignatura: S")):
+                with open(os.path.join(src, name), "w", encoding="utf-8") as f:
+                    f.write(text)
+            out = os.path.join(d, "salida", "nueva", "doc")
+            res = subprocess.run([sys.executable, SCRIPT, src, "-o", out, "--no-compile"],
+                                 capture_output=True, text=True, cwd=d)
+            self.assertEqual(res.returncode, 0, res.stdout + res.stderr)
+            with open(out + ".tex", encoding="utf-8") as f:
+                self.assertIn(os.path.abspath(src) + "/img/", f.read())
+
+    def test_graphicspath_usa_ruta_absoluta(self):
+        tex = m.build_latex_document({"titulo": "T", "autor": "A"}, "", source_dir="relativa")
+        self.assertIn(os.path.abspath("relativa"), tex)
+
+    def test_skill_tiene_frontmatter_y_apunta_a_un_script_existente(self):
+        skill = os.path.join(HERE, "skills", "md-to-latex", "SKILL.md")
+        with open(skill, encoding="utf-8") as f:
+            text = f.read()
+        self.assertTrue(text.startswith("---\nname: md-to-latex\n"))
+        self.assertIn("description:", text.split("---")[1])
+        self.assertTrue(os.path.exists(os.path.normpath(os.path.join(os.path.dirname(skill), "..", "..", "md_to_latex.py"))))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
