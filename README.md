@@ -10,7 +10,7 @@
 ![Dependencias](https://img.shields.io/badge/dependencias-ninguna-2E7D32)
 ![Licencia](https://img.shields.io/badge/licencia-GPL--3.0-blue)
 
-[Inicio rápido](#inicio-rápido) · [Script](#uso-como-script) · [Librería](#uso-como-librería) · [Skill](#uso-como-skill) · [Seguridad](#seguridad)
+[Inicio rápido](#inicio-rápido) · [Resultado](#resultado) · [Script](#uso-como-script) · [Librería](#uso-como-librería) · [Skill](#uso-como-skill) · [Seguridad](#seguridad)
 
 </div>
 
@@ -63,6 +63,27 @@ Genera `documento.tex` y `documento.pdf` en el directorio actual a partir de [ex
 
 > [!TIP]
 > Pon tus documentos reales en `sources/`: está en el `.gitignore` y no se sube al repositorio.
+
+## Resultado
+
+Este es el PDF que produce `python3 md_to_latex.py examples/`; el script, la librería y el skill generan el mismo documento. El texto del ejemplo está en [examples/body.md](examples/body.md) y los metadatos de la portada en [examples/header.md](examples/header.md).
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/preview/portada.png" alt="Portada con tabla de metadatos" width="100%"></td>
+    <td align="center"><img src="docs/preview/texto.png" alt="Texto, listas y tablas" width="100%"></td>
+    <td align="center"><img src="docs/preview/codigo.png" alt="Código resaltado y ecuaciones" width="100%"></td>
+    <td align="center"><img src="docs/preview/diagramas.png" alt="Imagen y diagramas Mermaid" width="100%"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub><b>Portada</b><br>título y tabla de metadatos</sub></td>
+    <td align="center"><sub><b>Contenido</b><br>secciones numeradas, listas y tablas</sub></td>
+    <td align="center"><sub><b>Código y ecuaciones</b><br>resaltado y matemáticas</sub></td>
+    <td align="center"><sub><b>Figuras</b><br>imágenes y diagramas Mermaid</sub></td>
+  </tr>
+</table>
+
+El documento incluye además un índice automático, encabezado con asignatura y fecha, y pie `Página X de Y` que no cuenta la portada.
 
 ## Uso como script
 

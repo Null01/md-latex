@@ -101,7 +101,7 @@ Las imágenes se buscan en la carpeta de fuentes y en `img/`. El texto alternati
 
 # Diagramas Mermaid
 
-Los bloques ` ```mermaid ` se renderizan como PDF vectorial con Chrome y se guardan en `img/` para no volver a generarlos si no cambian.
+Los bloques de código con lenguaje `mermaid` se renderizan como PDF vectorial con Chrome y se guardan en `img/` para no volver a generarlos si no cambian.
 
 ```mermaid
 flowchart LR
