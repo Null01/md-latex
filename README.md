@@ -150,7 +150,16 @@ tex = m.build_latex_document(
 
 ## Uso como skill
 
-[skills/md-to-latex/SKILL.md](skills/md-to-latex/SKILL.md) permite que un agente o modelo convierta un documento al recibir una ruta. Instalación: copia o enlaza `skills/md-to-latex/` donde tu agente busque skills y define `MD_LATEX_HOME` con la ruta de este repositorio.
+[skills/md-to-latex/SKILL.md](skills/md-to-latex/SKILL.md) permite que un agente o modelo convierta un documento al recibir una ruta. Este repositorio también es un plugin de Claude Code.
+
+**Instalación desde GitHub** (plugin):
+
+```text
+/plugin marketplace add Null01/md-latex
+/plugin install md-to-latex@md-latex
+```
+
+**Instalación manual:** clona el repositorio, enlaza `skills/md-to-latex/` donde tu agente busque skills y define `MD_LATEX_HOME` con la ruta del repositorio.
 
 Invocación:
 
@@ -219,6 +228,7 @@ fecha: "Noviembre 2026"
 md_to_latex.py           Script y librería
 test_md_to_latex.py      Pruebas unitarias
 skills/md-to-latex/      Skill para agentes
+.claude-plugin/          Manifiestos del plugin y del marketplace
 templates/mermaid.min.js Mermaid local (lo carga Chrome)
 examples/                Ejemplo completo con datos ficticios
 sources/                 Documentos privados (ignorada por git)

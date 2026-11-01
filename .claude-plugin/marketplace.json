@@ -1,0 +1,14 @@
+{
+  "name": "md-latex",
+  "description": "Herramienta para convertir Markdown a LaTeX y PDF, publicada como plugin con un skill.",
+  "owner": { "name": "Andres Duran" },
+  "plugins": [
+    {
+      "name": "md-to-latex",
+      "source": "./",
+      "description": "Convierte Markdown a LaTeX y PDF con portada, índice, tablas, ecuaciones y diagramas Mermaid.",
+      "category": "productivity",
+      "keywords": ["markdown", "latex", "pdf", "mermaid", "documentos", "conversion"]
+    }
+  ]
+}

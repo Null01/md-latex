@@ -518,6 +518,20 @@ class PathAndSkillTests(unittest.TestCase):
         self.assertIn("description:", text.split("---")[1])
         self.assertTrue(os.path.exists(os.path.normpath(os.path.join(os.path.dirname(skill), "..", "..", "md_to_latex.py"))))
 
+    def test_manifiestos_del_plugin_son_validos_y_apuntan_a_la_raiz(self):
+        import json
+        base = os.path.join(HERE, ".claude-plugin")
+        with open(os.path.join(base, "plugin.json"), encoding="utf-8") as f:
+            plugin = json.load(f)
+        with open(os.path.join(base, "marketplace.json"), encoding="utf-8") as f:
+            market = json.load(f)
+        self.assertEqual(plugin["name"], "md-to-latex")
+        entry = market["plugins"][0]
+        self.assertEqual(entry["name"], plugin["name"])
+        self.assertEqual(entry["source"], "./")
+        self.assertTrue(market.get("description"))
+        self.assertTrue(os.path.exists(os.path.join(HERE, "skills", "md-to-latex", "SKILL.md")))
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -6,7 +6,7 @@ argument-hint: "[ruta al .md o carpeta] [--output ruta/nombre] [--no-compile]"
 
 # md-to-latex
 
-Convierte Markdown a LaTeX/PDF con `md_to_latex.py`, en la raíz de este repositorio (dos niveles arriba de este archivo). Si el skill se copió a otro lugar, la carpeta del repo está en la variable `MD_LATEX_HOME`. Usa siempre rutas absolutas.
+Convierte Markdown a LaTeX/PDF con `md_to_latex.py`. En lo que sigue, `SCRIPT` es `${CLAUDE_SKILL_DIR}/../../md_to_latex.py`. Si ese marcador no se sustituyó (la ruta no existe), usa `${CLAUDE_PLUGIN_ROOT}/md_to_latex.py`; si tampoco, `$MD_LATEX_HOME/md_to_latex.py`. Usa rutas absolutas y entrecomilla `SCRIPT` por si contiene espacios.
 
 ## Entrada
 
@@ -29,14 +29,14 @@ Si el usuario dio la ruta pero no el destino, pregunta solo el punto 2. Antes de
 
 1. **Valida los metadatos** (aún sin compilar):
    ```bash
-   python3 "$MD_LATEX_HOME/md_to_latex.py" "<ruta>" --check-only
+   python3 "<SCRIPT>" "<ruta>" --check-only
    ```
    - `READY` (código 0): continúa.
    - `MISSING:...` (código 2): faltan título, autor o institución/asignatura. Pregúntaselos al usuario y pásalos con las opciones de arriba; no inventes datos personales.
    - Código 1: entrada inválida (body inexistente o vacío, `--header` que no existe, carpeta inexistente). El script lista cada problema; corrígelos con el usuario.
 2. **Convierte.** Pasa siempre `--output`: sin él, el resultado queda en el directorio actual, que puede no ser el del documento.
    ```bash
-   python3 "$MD_LATEX_HOME/md_to_latex.py" "<ruta>" --output "<carpeta-destino>/<nombre>"
+   python3 "<SCRIPT>" "<ruta>" --output "<carpeta-destino>/<nombre>"
    ```
    Opciones útiles: `--no-compile` (solo `.tex`, si no hay `pdflatex`), `--header` y `--body` para indicar archivos concretos.
 3. **Reporta** las rutas absolutas del `.tex` y del `.pdf` (no su contenido) y las líneas `[!]` de advertencia que haya impreso el script.
