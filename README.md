@@ -49,7 +49,30 @@ flowchart LR
 |---|---|---|
 | Python 3 (probado con 3.14) | Ejecutar el script | Sí |
 | `pdflatex` (TeX Live o MacTeX) | Compilar a PDF | Sí, salvo con `--no-compile` |
-| Google Chrome o Chromium, y `pdfcrop` (incluido en TeX Live) | Renderizar bloques ` ```mermaid ` | Solo si hay diagramas |
+| Google Chrome, Chromium o Edge, y `pdfcrop` (incluido en TeX Live) | Renderizar bloques ` ```mermaid ` | Solo si hay diagramas |
+
+Si falta `pdflatex`, el script no genera el PDF pero deja el `.tex` y avisa cómo instalarlo; si faltan Chrome o `pdfcrop`, los diagramas Mermaid salen como código. En ambos casos imprime la instrucción de instalación.
+
+### Instalación de dependencias
+
+Verifica qué tienes:
+
+```bash
+command -v python3 pdflatex pdfcrop
+```
+
+Cada herramienta que no aparezca hay que instalarla a mano:
+
+| Falta | macOS (Homebrew) | Debian / Ubuntu |
+|---|---|---|
+| `pdflatex` y `pdfcrop` | `brew install --cask mactex-no-gui` | `sudo apt install texlive-latex-extra texlive-lang-spanish texlive-extra-utils` |
+| Solo `pdfcrop` | `sudo tlmgr install pdfcrop` | `sudo apt install texlive-extra-utils` |
+| Chrome o Chromium | `brew install --cask google-chrome` | `sudo apt install chromium` |
+
+- MacTeX es grande (varios GB); la alternativa ligera es `brew install --cask basictex`, y luego `sudo tlmgr install collection-latexextra collection-langspanish pdfcrop`.
+- **Windows (sin probar):** `winget install MiKTeX.MiKTeX` y `winget install Google.Chrome`; `pdfcrop` además necesita Perl (`winget install StrawberryPerl.StrawberryPerl`). El comando de Python suele ser `python` en vez de `python3`. El script busca Chrome, Chromium o Edge en las rutas habituales; si está en otro lugar, define `MD_LATEX_CHROME` con su ruta. Si algo falla, usa `--no-compile` o ejecútalo desde WSL.
+- Después de instalar, abre una terminal nueva para que el `PATH` se actualice. Si solo necesitas el `.tex`, usa `--no-compile`.
+- Estos comandos son la forma habitual de instalarlos; solo los he comprobado en macOS con MacTeX.
 
 ## Inicio rápido
 
@@ -160,6 +183,14 @@ tex = m.build_latex_document(
 ```
 
 **Instalación manual:** clona el repositorio, enlaza `skills/md-to-latex/` donde tu agente busque skills y define `MD_LATEX_HOME` con la ruta del repositorio.
+
+> [!IMPORTANT]
+> El plugin solo trae el script: necesitas `python3`, `pdflatex` y, para Mermaid, Chrome y `pdfcrop` en tu máquina (ver [Instalación de dependencias](#instalación-de-dependencias)). Si falta algo, el skill te dice qué es y cómo instalarlo a mano; **no instala nada por su cuenta**.
+
+> [!WARNING]
+> Instalar un plugin ejecuta código en tu equipo. Revisa [md_to_latex.py](md_to_latex.py) y el skill antes de instalarlo, como con cualquier plugin de terceros.
+
+**Para quien publica cambios:** sube `version` en `.claude-plugin/plugin.json` en cada cambio que quieras que reciban los usuarios ya instalados; sin ese cambio, es posible que no se actualicen.
 
 Invocación:
 

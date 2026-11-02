@@ -43,7 +43,19 @@ Si el usuario dio la ruta pero no el destino, pregunta solo el punto 2. Antes de
 
 ## Requisitos
 
-Python 3. `pdflatex` para el PDF (sin él, `--no-compile` y avisa). Chrome/Chromium y `pdfcrop` solo si hay bloques ` ```mermaid `; si no se pueden renderizar, el script los deja como código y lo avisa.
+Python 3. `pdflatex` para el PDF. Chrome/Chromium y `pdfcrop` solo si hay bloques ` ```mermaid `.
+
+Antes de convertir, comprueba lo que falte: `command -v python3 pdflatex pdfcrop`. Si falta algo, **no lo instales por tu cuenta**: instalar software requiere el permiso del usuario. Dile qué falta y cómo instalarlo a mano, y ofrécele `--no-compile` (solo `.tex`) mientras tanto:
+
+| Falta | macOS | Debian/Ubuntu | Windows (sin probar) |
+|---|---|---|---|
+| `pdflatex` y `pdfcrop` (TeX Live) | `brew install --cask mactex-no-gui` | `sudo apt install texlive-latex-extra texlive-lang-spanish texlive-extra-utils` | `winget install MiKTeX.MiKTeX` (`pdfcrop` además necesita Perl: `winget install StrawberryPerl.StrawberryPerl`) |
+| Solo `pdfcrop` | `sudo tlmgr install pdfcrop` | `sudo apt install texlive-extra-utils` | Instala Perl y el paquete `pdfcrop` desde la consola de MiKTeX |
+| Chrome o Chromium | `brew install --cask google-chrome` | `sudo apt install chromium` | `winget install Google.Chrome` |
+
+En Windows el comando de Python suele ser `python` y no `python3`. El script detecta Chrome, Chromium o Edge en las rutas habituales de macOS, Linux y Windows; si está en otra ruta, se indica con la variable `MD_LATEX_CHROME`. Windows no está probado: si algo falla, ofrece `--no-compile` y avisa.
+
+Tras instalar, el usuario debe abrir una terminal nueva. Si el script imprime `[!] No se encontró …`, repite esas instrucciones. Detalle completo en el `README.md`, sección «Instalación de dependencias».
 
 ## Seguridad
 

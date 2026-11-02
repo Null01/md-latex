@@ -1,6 +1,6 @@
 {
   "name": "md-to-latex",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Convierte Markdown a LaTeX y PDF con portada, índice, tablas, ecuaciones y diagramas Mermaid.",
   "author": { "name": "Andres Duran" },
   "homepage": "https://github.com/Null01/md-latex",

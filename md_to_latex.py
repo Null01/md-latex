@@ -21,6 +21,62 @@ PDFLATEX_PATH = "/Library/TeX/texbin/pdflatex"
 if not os.path.exists(PDFLATEX_PATH):
     PDFLATEX_PATH = shutil.which("pdflatex") or "pdflatex"
 
+_INSTALL_HINTS = {
+    "pdflatex": "Instala TeX Live o MacTeX (macOS: brew install --cask mactex-no-gui; "
+                "Debian/Ubuntu: sudo apt install texlive-latex-extra texlive-lang-spanish texlive-extra-utils).",
+    "pdfcrop": "pdfcrop viene con TeX Live (macOS: sudo tlmgr install pdfcrop; "
+               "Debian/Ubuntu: sudo apt install texlive-extra-utils).",
+    "chrome": "Instala Google Chrome, Chromium o Edge (macOS: brew install --cask google-chrome; "
+              "Debian/Ubuntu: sudo apt install chromium; Windows: winget install Google.Chrome) "
+              "o indica su ruta con la variable MD_LATEX_CHROME.",
+}
+_hinted = set()
+
+
+def find_chrome(env=None, exists=os.path.isfile, which=shutil.which):
+    """Localiza un navegador Chromium (Chrome, Chromium o Edge) en macOS, Linux o Windows.
+
+    MD_LATEX_CHROME fuerza una ruta concreta. Devuelve None si no encuentra ninguno.
+    """
+    env = os.environ if env is None else env
+    forced = env.get("MD_LATEX_CHROME")
+    if forced:
+        return forced if exists(forced) else None
+
+    candidates = [
+        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        "/Applications/Chromium.app/Contents/MacOS/Chromium",
+        "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
+    ]
+    for var in ("ProgramFiles", "ProgramFiles(x86)", "LOCALAPPDATA"):
+        base = env.get(var)
+        if base:
+            candidates.append(os.path.join(base, "Google", "Chrome", "Application", "chrome.exe"))
+            candidates.append(os.path.join(base, "Microsoft", "Edge", "Application", "msedge.exe"))
+    for path in candidates:
+        if exists(path):
+            return path
+    for name in ("google-chrome", "google-chrome-stable", "chromium", "chromium-browser",
+                 "chrome", "msedge", "microsoft-edge"):
+        found = which(name)
+        if found:
+            return found
+    return None
+
+
+def tool_exists(path):
+    """True si `path` es un ejecutable existente (ruta absoluta) o está en el PATH."""
+    return bool(path) and (os.path.isfile(path) and os.access(path, os.X_OK) or shutil.which(path) is not None)
+
+
+def warn_missing_tool(key, consequence):
+    """Avisa una sola vez por herramienta que falta e indica cómo instalarla (README: Instalación)."""
+    if key in _hinted:
+        return
+    _hinted.add(key)
+    print(f"[!] No se encontró {key}: {consequence}")
+    print(f"    {_INSTALL_HINTS[key]} Más detalle en el README, sección «Instalación de dependencias».")
+
 
 def normalize_key(key):
     """Normaliza claves eliminando acentos y espacios."""
@@ -308,12 +364,21 @@ def render_mermaid_diagram(mermaid_code, output_pdf_path):
             return True
 
     # 2. Renderizado nativo integrado usando templates/mermaid.min.js + Chrome Headless + pdfcrop
-    chrome_bin = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-    if not os.path.exists(chrome_bin):
-        chrome_bin = shutil.which("google-chrome") or shutil.which("chromium")
+    chrome_bin = find_chrome()
 
     script_dir = os.path.dirname(os.path.abspath(__file__))
     mermaid_js = os.path.join(script_dir, "templates", "mermaid.min.js")
+
+    pdfcrop_bin = "/Library/TeX/texbin/pdfcrop"
+    if not os.path.exists(pdfcrop_bin):
+        pdfcrop_bin = shutil.which("pdfcrop") or "pdfcrop"
+
+    if not tool_exists(chrome_bin):
+        warn_missing_tool("chrome", "los diagramas Mermaid se incluirán como código.")
+        return False
+    if not tool_exists(pdfcrop_bin):
+        warn_missing_tool("pdfcrop", "los diagramas Mermaid se incluirán como código.")
+        return False
 
     if chrome_bin and os.path.exists(chrome_bin) and os.path.exists(mermaid_js):
         html_content = build_mermaid_html(mermaid_code, mermaid_js)
@@ -334,15 +399,11 @@ def render_mermaid_diagram(mermaid_code, output_pdf_path):
             "--virtual-time-budget=15000",
             f"--user-data-dir={tmp_user_dir}",
             f"--print-to-pdf={tmp_raw_pdf}",
-            f"file://{tmp_html}"
+            pathlib.Path(tmp_html).as_uri()
         ]
         
         res = subprocess.run(cmd, capture_output=True, text=True)
         
-        pdfcrop_bin = "/Library/TeX/texbin/pdfcrop"
-        if not os.path.exists(pdfcrop_bin):
-            pdfcrop_bin = shutil.which("pdfcrop") or "pdfcrop"
-
         if os.path.exists(tmp_raw_pdf):
             os.makedirs(os.path.dirname(output_pdf_path) or ".", exist_ok=True)
             res_crop = subprocess.run([pdfcrop_bin, "--margins", "5", tmp_raw_pdf, output_pdf_path], capture_output=True)
@@ -917,6 +978,11 @@ def compile_latex(tex_file_path):
     dir_name = os.path.dirname(tex_file_path) or "."
     base_name = os.path.basename(tex_file_path)
     cmd = [PDFLATEX_PATH, "-interaction=nonstopmode", base_name]
+
+    if not tool_exists(PDFLATEX_PATH):
+        warn_missing_tool("pdflatex", f"no se puede generar el PDF; el .tex quedó en {tex_file_path}.")
+        print("    Mientras tanto puedes usar --no-compile para generar solo el .tex.")
+        return False
 
     print(f"[*] Compilando {base_name} con {PDFLATEX_PATH} (Pasada 1)...")
     res1 = subprocess.run(cmd, cwd=dir_name, capture_output=True, text=True, errors="replace")

@@ -533,5 +533,78 @@ class PathAndSkillTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(HERE, "skills", "md-to-latex", "SKILL.md")))
 
 
+class MissingToolsTests(unittest.TestCase):
+    """Si faltan pdflatex, pdfcrop o Chrome, el script avisa cómo instalarlos en vez de fallar con un traceback."""
+
+    def setUp(self):
+        m._hinted.clear()
+        self.addCleanup(m._hinted.clear)
+
+    def capture(self, fn, *args):
+        import contextlib
+        import io
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            result = fn(*args)
+        return result, buf.getvalue()
+
+    def test_tool_exists(self):
+        self.assertTrue(m.tool_exists(sys.executable))
+        self.assertFalse(m.tool_exists("/no/existe/herramienta"))
+        self.assertFalse(m.tool_exists(None))
+
+    def test_sin_pdflatex_devuelve_false_con_instrucciones(self):
+        from unittest import mock
+        with tempfile.TemporaryDirectory() as d:
+            tex = os.path.join(d, "a.tex")
+            open(tex, "w").close()
+            with mock.patch.object(m, "PDFLATEX_PATH", "/no/existe/pdflatex"):
+                ok, out = self.capture(m.compile_latex, tex)
+        self.assertFalse(ok)
+        self.assertIn("No se encontró pdflatex", out)
+        self.assertIn("--no-compile", out)
+        self.assertIn("Instalación de dependencias", out)
+
+    def test_sin_chrome_o_pdfcrop_mermaid_cae_a_codigo_con_instrucciones(self):
+        from unittest import mock
+        for missing, key in (("chrome", "chrome"), ("pdfcrop", "pdfcrop")):
+            m._hinted.clear()
+            real = m.tool_exists
+            def fake(path, missing=missing, real=real):
+                return False if missing in (path or "").lower() else real(path)
+            with mock.patch.object(m.shutil, "which", return_value=None), \
+                 mock.patch.object(m, "tool_exists", side_effect=fake):
+                ok, out = self.capture(m.render_mermaid_diagram, "graph TD\n A-->B", os.path.join(tempfile.gettempdir(), "x.pdf"))
+            self.assertFalse(ok, key)
+            self.assertIn(f"No se encontró {key}", out)
+
+    def test_find_chrome_en_windows_usa_program_files_y_edge(self):
+        chrome = os.path.join("C:/Program Files", "Google", "Chrome", "Application", "chrome.exe")
+        env = {"ProgramFiles": "C:/Program Files"}
+        self.assertEqual(m.find_chrome(env, exists=lambda p: p == chrome, which=lambda n: None), chrome)
+        edge = os.path.join("C:/Program Files (x86)", "Microsoft", "Edge", "Application", "msedge.exe")
+        env = {"ProgramFiles(x86)": "C:/Program Files (x86)"}
+        self.assertEqual(m.find_chrome(env, exists=lambda p: p == edge, which=lambda n: None), edge)
+
+    def test_find_chrome_respeta_variable_y_path(self):
+        self.assertEqual(m.find_chrome({"MD_LATEX_CHROME": "/x/chrome"}, exists=lambda p: p == "/x/chrome"), "/x/chrome")
+        self.assertIsNone(m.find_chrome({"MD_LATEX_CHROME": "/x/no"}, exists=lambda p: False, which=lambda n: "/usr/bin/chromium"))
+        self.assertEqual(m.find_chrome({}, exists=lambda p: False,
+                                       which=lambda n: "/usr/bin/chromium" if n == "chromium" else None), "/usr/bin/chromium")
+        self.assertIsNone(m.find_chrome({}, exists=lambda p: False, which=lambda n: None))
+
+    def test_la_url_del_html_se_construye_con_as_uri(self):
+        with open(SCRIPT, encoding="utf-8") as f:
+            src = f.read()
+        self.assertNotIn('f"file://{tmp_html}"', src)
+        self.assertIn("pathlib.Path(tmp_html).as_uri()", src)
+
+    def test_el_aviso_sale_una_sola_vez_por_herramienta(self):
+        _, out1 = self.capture(m.warn_missing_tool, "pdfcrop", "x")
+        _, out2 = self.capture(m.warn_missing_tool, "pdfcrop", "x")
+        self.assertTrue(out1)
+        self.assertEqual(out2, "")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
